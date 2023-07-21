@@ -1,3 +1,4 @@
+// rerror wrap error with stack and http response info
 package rerror
 
 import (
@@ -7,10 +8,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-var errNil = stderrors.New("nil error")
+var ErrNil = stderrors.New("rerror: err nil")
 
 type responseError struct {
-	err error // primitive error or primitive error with stack
+	err error // primitive error or primitive error with stack, default: errNil, non-nil
 
 	httpStatus int // http status code
 
@@ -20,7 +21,7 @@ type responseError struct {
 
 func New(httpStatus int, format string, arg ...any) *responseError {
 	return &responseError{
-		err:        errNil,
+		err:        ErrNil,
 		httpStatus: httpStatus,
 		Code:       "",
 		Message:    fmt.Sprintf(format, arg...),
@@ -59,10 +60,6 @@ func (e *responseError) Error() string {
 }
 
 func (e *responseError) Stack() string {
-	if e.err == nil {
-		return ""
-	}
-
 	if _, ok := e.err.(interface{ StackTrace() errors.StackTrace }); ok {
 		return fmt.Sprintf("%+v", e.err)
 	}

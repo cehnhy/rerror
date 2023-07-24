@@ -10,7 +10,7 @@ import (
 
 var ErrNil = stderrors.New("rerror: err nil")
 
-type responseError struct {
+type ResponseError struct {
 	err error // primitive error or primitive error with stack, default: errNil, non-nil
 
 	httpStatus int // http status code
@@ -19,8 +19,8 @@ type responseError struct {
 	Message string `json:"message,omitempty"` // error message and how to solve this problem
 }
 
-func New(httpStatus int, format string, arg ...any) *responseError {
-	return &responseError{
+func New(httpStatus int, format string, arg ...any) *ResponseError {
+	return &ResponseError{
 		err:        ErrNil,
 		httpStatus: httpStatus,
 		Code:       "",
@@ -28,12 +28,12 @@ func New(httpStatus int, format string, arg ...any) *responseError {
 	}
 }
 
-func (e *responseError) E(err error) *responseError {
+func (e *ResponseError) E(err error) *ResponseError {
 	if err == nil {
 		return e
 	}
 
-	if _, ok := err.(*responseError); ok {
+	if _, ok := err.(*ResponseError); ok {
 		panic("err is already a responseError")
 	}
 
@@ -46,20 +46,20 @@ func (e *responseError) E(err error) *responseError {
 	return e
 }
 
-func (e *responseError) C(code string) *responseError {
+func (e *ResponseError) C(code string) *ResponseError {
 	e.Code = code
 	return e
 }
 
-func (e *responseError) Unwrap() error {
+func (e *ResponseError) Unwrap() error {
 	return e.err
 }
 
-func (e *responseError) Error() string {
+func (e *ResponseError) Error() string {
 	return e.err.Error()
 }
 
-func (e *responseError) Stack() string {
+func (e *ResponseError) Stack() string {
 	if _, ok := e.err.(interface{ StackTrace() errors.StackTrace }); ok {
 		return fmt.Sprintf("%+v", e.err)
 	}
@@ -67,6 +67,6 @@ func (e *responseError) Stack() string {
 	return ""
 }
 
-func (e *responseError) HTTPStatus() int {
+func (e *ResponseError) HTTPStatus() int {
 	return e.httpStatus
 }
